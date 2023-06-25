@@ -1,4 +1,5 @@
 import {LEGENDS} from './utils/index';
+
 export function diff(oldHtml, newHtml, options={state: LEGENDS.ADDED}) {
     const isAdded = options.state === LEGENDS.ADDED,
           isRemoved = options.state === LEGENDS.REMOVED;
@@ -63,13 +64,12 @@ export function diff(oldHtml, newHtml, options={state: LEGENDS.ADDED}) {
     return result.join('');
 }
   
-  function getTagLength(tag) {
-    const match = tag.match(/^<\/?(\w+)/);
-  
-    if (match) {
-      return match[0].length;
-    }
-  
-    return tag.length;
+function getTagLength(tag) {
+  const match = tag.match(/^<\/?(\w+)/);
+
+  if (match) {
+    return match[0].length;
   }
-  
+
+  return tag.length;
+}

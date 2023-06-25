@@ -1,4 +1,4 @@
-export const LEGENDS = {
-    'ADDED': 'added',
-    'REMOVED': 'removed',
-}
+export * from './constants';
+export * from './advance';
+export * from './attributes';
+export * from './element';
