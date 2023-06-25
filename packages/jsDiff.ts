@@ -1,7 +1,7 @@
-import {legends} from './utils/index';
-export function diff(oldHtml, newHtml, options={state: legends.ADDED}) {
-    const isAdded = options.state === legends.ADDED,
-          isRemoved = options.state === legends.REMOVED;
+import {LEGENDS} from './utils/index';
+export function diff(oldHtml, newHtml, options={state: LEGENDS.ADDED}) {
+    const isAdded = options.state === LEGENDS.ADDED,
+          isRemoved = options.state === LEGENDS.REMOVED;
   
     const oldArr = oldHtml.split(/(<[^<>]+>)/g).filter(Boolean);
     const newArr = newHtml.split(/(<[^<>]+>)/g).filter(Boolean);

@@ -1,11 +1,11 @@
 
 import {diffChars} from 'diff'
-import {legends} from './utils/index';
+import {LEGENDS} from './utils/index';
 
-export function diffPlugin(oldCode, newCode, options={state: legends.ADDED}) {
+export function diffPlugin(oldCode, newCode, options={state: LEGENDS.ADDED}) {
 const diff = diffChars(oldCode, newCode);
-const isAdded = options.state === legends.ADDED,
-        isRemoved = options.state === legends.REMOVED;
+const isAdded = options.state === LEGENDS.ADDED,
+        isRemoved = options.state === LEGENDS.REMOVED;
 diff.forEach((part) => {
     if(isAdded && part.added) {
     part.value = `<span style="background-color: #8edf97;display: inline-block;">${part.value}</span>`;

@@ -1,4 +1,4 @@
-export const legends = {
+export const LEGENDS = {
     'ADDED': 'added',
     'REMOVED': 'removed',
 }

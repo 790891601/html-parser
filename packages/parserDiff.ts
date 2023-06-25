@@ -1,4 +1,4 @@
-import {legends} from './utils/index';
+import {LEGENDS} from './utils/index';
 //1.用来将模板字符串解析为模板AST的解析器（parser）
 function parser(template) {
     const context = {
