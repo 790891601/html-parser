@@ -1,64 +1,67 @@
 import {TextModes, TagState, advanceBy, advanceSpaces, isUnary, closeElement} from './utils/index'
 
 export default class HTMLParser {
-    parser(template) {
-        const context = {
-            source: template,
-            mode: TextModes.DATA,
-            type: 'Root',
-            children: [],
-        }
-        const nodes = this.parseChildren(context);
-        
-        return {
-            type: 'Root',
-            children: nodes
-        };
+  constructor() {
+    
+  }
+  parser(template) {
+    const context = {
+        source: template,
+        mode: TextModes.DATA,
+        type: 'Root',
+        children: [],
     }
-    parseChildren(context, ancestors = []) {
-        let nodes: any[] = [];
-        // 从上下文对象中取得当前状态，包括模式 mode 和模板内容
-      
-        while (this.isExists(context)) {
-          const {mode, source} = context;
-          let node;// 只有 DATA 模式和 RCDATA 模式才支持插值节点的解析
-          if (mode === TextModes.DATA || mode === TextModes.RCDATA) {
-            // 只有 DATA 模式才支持标签节点的解析
-            if(mode === TextModes.DATA && source[0] === "<") {
-              if(source[1] === '!') {
-                if (source.startsWith("<!--")) {
-                  //注释
-                  node = this.parseComment(context, ancestors);
-                }
-              }else if(/[a-z]/i.test(source[1])) {
-                //标签
-                node = this.parseElement(context, ancestors);
-              }else if(source[1] === '/') {
-                //结束标签状态
-                return nodes;
+    const nodes = this.parseChildren(context);
+    
+    return {
+        type: 'Root',
+        children: nodes
+    };
+  }
+  parseChildren(context, ancestors = []) {
+      let nodes: any[] = [];
+      // 从上下文对象中取得当前状态，包括模式 mode 和模板内容
+    
+      while (this.isExists(context)) {
+        const {mode, source} = context;
+        let node;// 只有 DATA 模式和 RCDATA 模式才支持插值节点的解析
+        if (mode === TextModes.DATA || mode === TextModes.RCDATA) {
+          // 只有 DATA 模式才支持标签节点的解析
+          if(mode === TextModes.DATA && source[0] === "<") {
+            if(source[1] === '!') {
+              if (source.startsWith("<!--")) {
+                //注释
+                node = this.parseComment(context, ancestors);
               }
-            }else if (source.startsWith("<![CDATA[")) {
-              // CDATA
-              node = this.parseCDATA(context, ancestors);
-            }else if (source[1] === "/") {
-              //结束标签，这里需要抛出错误，后文会详细解释原因
-              throw new Error("不是DATA模式");
-            }else if(source.startsWith("{{")) {
-              //插值解构
-              node = this.parseInterpolation(context);
+            }else if(/[a-z]/i.test(source[1])) {
+              //标签
+              node = this.parseElement(context, ancestors);
+            }else if(source[1] === '/') {
+              //结束标签状态
+              return nodes;
             }
-            // node 不存在，说明处于其他模式，即非 DATA 模式且非 RCDATA 模式
-            if(!node) {
-              node = this.parseText(context);
-            }
-            nodes.push(node);
+          }else if (source.startsWith("<![CDATA[")) {
+            // CDATA
+            node = this.parseCDATA(context, ancestors);
+          }else if (source[1] === "/") {
+            //结束标签，这里需要抛出错误，后文会详细解释原因
+            throw new Error("不是DATA模式");
+          }else if(source.startsWith("{{")) {
+            //插值解构
+            node = this.parseInterpolation(context);
           }
+          // node 不存在，说明处于其他模式，即非 DATA 模式且非 RCDATA 模式
+          if(!node) {
+            node = this.parseText(context);
+          }
+          nodes.push(node);
         }
-        return nodes;
-    }
-    isExists(context) {
-        return context.source;
-    }
+      }
+      return nodes;
+  }
+  isExists(context) {
+      return context.source;
+  }
     
    parseText(context) {
     let {mode, source} = context;
@@ -74,10 +77,10 @@ export default class HTMLParser {
       content: content
     }
   }
-   parseInterpolation(context) {
+  parseInterpolation(context) {
   
   }
-   parseElement(context, ancestors) {
+  parseElement(context, ancestors) {
     let {mode, source} = context;
   
     let nodes = [];
@@ -131,7 +134,7 @@ export default class HTMLParser {
     }
   }
   
-    parseAttribute(context, element) {
+  parseAttribute(context, element) {
     const attrReg = /(:?[a-zA-Z][a-zA-Z-]*)\s*(?:(=)\s*(?:(["'])([^"'<>]*)\3|([^\s"'<>]*)))?/
   
     const attributes: string[][] = [];
@@ -165,7 +168,7 @@ export default class HTMLParser {
     return attributes;
   }
   //注释
-   parseComment(context, ancestors) {
+  parseComment(context, ancestors) {
     let {source} = context;
     let value = ''; //注释内容
   
@@ -187,7 +190,7 @@ export default class HTMLParser {
       children: value,
     }
   }
-   parseCDATA(context, ancestors) {
+  parseCDATA(context, ancestors) {
     // const cdataMatch = context.source.match(/<!\[CDATA\[([\s\S]*?)\]\]/);
     // advanceBy(context, cdataMatch[0].length);
     //
