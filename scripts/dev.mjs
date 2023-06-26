@@ -14,7 +14,7 @@ async function devServer() {
   // 开启一个服务
   let { host, port } = await context.serve({
     servedir: "dist",
-    port: 8080,
+    port: 9000,
     host: "127.0.0.1",
   });
   console.log(`Serve is listening on http://${host}:${port}`);

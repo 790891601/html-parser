@@ -23,3 +23,13 @@ export const TagState = { //标签模式
     tagEnd: 5, //结束标签状态
     tagEndName: 6 // 结束标签名称状态
 }
+
+//切换文本模式
+export const toggleMode = (context, mode) => {
+    context.oldMode = context.mode;
+    context.mode = mode;
+}
+//恢复模式
+export const revertMode = (context) => {
+    context.mode = context.oldMode;
+}

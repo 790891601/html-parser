@@ -1,13 +1,14 @@
-import {TextModes, TagState, advanceBy, advanceSpaces, isUnary, closeElement} from './utils/index'
+import {TextModes, TagState, advanceBy, advanceSpaces, isUnary, closeElement, toggleMode, revertMode} from './utils/index'
 
 export default class HTMLParser {
   constructor() {
-    
+
   }
   parser(template) {
     const context = {
         source: template,
         mode: TextModes.DATA,
+        oldMode: TextModes.DATA,
         type: 'Root',
         children: [],
     }
@@ -27,7 +28,11 @@ export default class HTMLParser {
         let node;// 只有 DATA 模式和 RCDATA 模式才支持插值节点的解析
         if (mode === TextModes.DATA || mode === TextModes.RCDATA) {
           // 只有 DATA 模式才支持标签节点的解析
-          if(mode === TextModes.DATA && source[0] === "<") {
+          if (source.startsWith("<![CDATA[")) {
+            // CDATA
+            toggleMode(context, TextModes.CDATA);
+            continue;
+          }else if(mode === TextModes.DATA && source[0] === "<") {
             if(source[1] === '!') {
               if (source.startsWith("<!--")) {
                 //注释
@@ -40,10 +45,7 @@ export default class HTMLParser {
               //结束标签状态
               return nodes;
             }
-          }else if (source.startsWith("<![CDATA[")) {
-            // CDATA
-            node = this.parseCDATA(context, ancestors);
-          }else if (source[1] === "/") {
+          }else if (mode === TextModes.RCDATA || mode === TextModes.DATA && source[1] === "/") {
             //结束标签，这里需要抛出错误，后文会详细解释原因
             throw new Error("不是DATA模式");
           }else if(source.startsWith("{{")) {
@@ -55,6 +57,13 @@ export default class HTMLParser {
             node = this.parseText(context);
           }
           nodes.push(node);
+        }else if(mode === TextModes.CDATA) {
+          if (source.startsWith("<![CDATA[")) {
+            // CDATA
+            node = this.parseCDATA(context, ancestors);
+            revertMode(context);
+          }
+          nodes.push(node);
         }
       }
       return nodes;
@@ -63,7 +72,7 @@ export default class HTMLParser {
       return context.source;
   }
     
-   parseText(context) {
+  parseText(context) {
     let {mode, source} = context;
     //匹配纯文本
     const match = source.match(/[^<>]*/);
@@ -78,7 +87,14 @@ export default class HTMLParser {
     }
   }
   parseInterpolation(context) {
-  
+    const {source} = context;
+    const match = source.match(/^\{\{\s*(.*?)\s*\}\}/);
+    advanceBy(context, match[0].length);
+
+    return {
+      type: 'Interpolation',
+      content: [match[0], match[1]],
+    }
   }
   parseElement(context, ancestors) {
     let {mode, source} = context;
@@ -191,13 +207,12 @@ export default class HTMLParser {
     }
   }
   parseCDATA(context, ancestors) {
-    // const cdataMatch = context.source.match(/<!\[CDATA\[([\s\S]*?)\]\]/);
-    // advanceBy(context, cdataMatch[0].length);
-    //
-    // console.log(cdataMatch);
-    // return {
-    //   type: 'CDATA',
-    //   children: cdataMatch[1],
-    // }
+    const cdataMatch = context.source.match(/^<!\[CDATA\[([\s\S]*?)\]\]/);
+    advanceBy(context, cdataMatch[0].length);
+    
+    return {
+      type: 'CDATA',
+      content: cdataMatch[1],
+    }
   }
 }
