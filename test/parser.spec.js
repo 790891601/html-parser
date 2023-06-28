@@ -75,6 +75,44 @@ describe("parser test", () => {
         expect(htmlParser.parser("<div><![CDATA[<HelloWorld!>哈哈$#@!合法符号亲唇纹嗯]]</div><b>xxx</b>")).toMatchObject(result);
     });
 
+    test("parser at once element", () => {
+        const result = {
+            "children": [
+                {
+                    "attrs": [
+                        ["src='http://www.baidu.com/s/1.jpg'", "src", "=", "http://www.baidu.com/s/1.jpg", null, null],
+                        ["alt='hello'", "alt", "=", "hello", null, null],
+                    ], 
+                    "tagName": "img", 
+                    "type": "Element"
+                },
+            ], 
+            "type": "Root"
+        }
+        expect(htmlParser.parser("<img src='http://www.baidu.com/s/1.jpg' alt='hello' />")).toMatchObject(result);
+    });
+
+    test("parse of the directive", () => {
+        const result = {
+            "children": [
+                {
+                    "attrs": [
+                        ["src='http://www.baidu.com/s/1.jpg'", "src", "=", "http://www.baidu.com/s/1.jpg", null, null],
+                        ["alt='hello'", "alt", "=", "hello", null, null],
+                    ],
+                    "directive": [
+                        //指令
+                        
+                    ],
+                    "tagName": "img", 
+                    "type": "Element"
+                },
+            ], 
+            "type": "Root"
+        }
+        expect(htmlParser.parser("<img v-if='isShow' /><p v-else>456</p>")).toMatchObject(result);
+    })
+
     //非合法标签
     test("parser at tag end", async () => {
         const mError = new Error("标签必须要有结束");

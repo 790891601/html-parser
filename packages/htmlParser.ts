@@ -1,9 +1,6 @@
 import {TextModes, TagState, advanceBy, advanceSpaces, isUnary, closeElement, toggleMode, revertMode} from './utils/index'
 
 export default class HTMLParser {
-  constructor() {
-
-  }
   parser(template) {
     const context = {
         source: template,
@@ -23,7 +20,7 @@ export default class HTMLParser {
       let nodes: any[] = [];
       // 从上下文对象中取得当前状态，包括模式 mode 和模板内容
     
-      while (this.isExists(context)) {
+      while (this.isEnd(context, ancestors)) {
         const {mode, source} = context;
         let node;// 只有 DATA 模式和 RCDATA 模式才支持插值节点的解析
         if (mode === TextModes.DATA || mode === TextModes.RCDATA) {
@@ -68,8 +65,16 @@ export default class HTMLParser {
       }
       return nodes;
   }
-  isExists(context) {
-      return context.source;
+  isEnd(context, ancestors) {
+    //元素栈,当前子元素有对应栈
+    // for(let i = 0; i < ancestors.length; i++) {
+    //   if(ancestors[i].tag) {
+    //     return true;
+    //   }
+    // }
+    if(context.source) {
+      return true;
+    }
   }
     
   parseText(context) {
@@ -129,7 +134,6 @@ export default class HTMLParser {
       }
       const ancestor = ancestors.pop(); //退出栈
       if(ancestor) {
-        //还是有缺陷
         advanceBy(context, ancestor.tagName.length+2);
         advanceSpaces(context);
         advanceBy(context, 1);
@@ -151,6 +155,7 @@ export default class HTMLParser {
   }
   
   parseAttribute(context, element) {
+    //解析属性，指令v-if,v-model,事件@event, v-on:eventName, v:bind:name.sync
     const attrReg = /(:?[a-zA-Z][a-zA-Z-]*)\s*(?:(=)\s*(?:(["'])([^"'<>]*)\3|([^\s"'<>]*)))?/
   
     const attributes: string[][] = [];
@@ -162,14 +167,14 @@ export default class HTMLParser {
   
       advanceBy(context, attrMatch[0].length); //消除属性
   
-      // ['v-if="isShow"', 'v-if', '=', 'isShow', null, null],
+      // ['v-if="isShow"', 'v-if', '=', 'isShow', 指令, 修饰符],   
       // ['class="header"', 'class', '=', 'header', null, null]
       //   0:"class-name=\"collection-icon\""
       //   1:"class-name"
       //   2:"\""
       //   3:"collection-icon"
       //   4:undefined
-      attributes.push([attrMatch[0], attrMatch[1], attrMatch[2], attrMatch[4], attrMatch[5], attrMatch[6]]);
+      attributes.push([attrMatch[0], attrMatch[1], attrMatch[2], attrMatch[4], attrMatch[5] || null, attrMatch[6] || null]);
   
       //消除空格
       advanceSpaces(context);
