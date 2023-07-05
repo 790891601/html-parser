@@ -1,7 +1,7 @@
 {
   "name": "html-parser",
   "version": "1.0.0",
-  "description": "This is HTML-parser",
+  "description": "This is HTML-parser, html parser diff",
   "main": "index.js",
   "type": "module",
   "scripts": {

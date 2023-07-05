@@ -1,5 +1,15 @@
 import {TextModes, TagState, advanceBy, advanceSpaces, isUnary, closeElement, toggleMode, revertMode} from './utils/index'
 
+export function tokenize(template) {
+  /**
+   * 输入：<div>123</div>
+   * 输出: [{ type: tagOpen, tagName: 'div' }, { type: text, content: '123' }, { type: tagEnd, tagName: 'div' }]
+   */
+  const tokens = [];
+  
+  return tokens;
+}
+
 export default class HTMLParser {
   parser(template) {
     const context = {
@@ -167,14 +177,9 @@ export default class HTMLParser {
   
       advanceBy(context, attrMatch[0].length); //消除属性
   
-      // ['v-if="isShow"', 'v-if', '=', 'isShow', 指令, 修饰符],   
-      // ['class="header"', 'class', '=', 'header', null, null]
-      //   0:"class-name=\"collection-icon\""
-      //   1:"class-name"
-      //   2:"\""
-      //   3:"collection-icon"
-      //   4:undefined
-      attributes.push([attrMatch[0], attrMatch[1], attrMatch[2], attrMatch[4], attrMatch[5] || null, attrMatch[6] || null]);
+      // ['v-if="isShow"', 'v-if', '=', 'isShow'],   
+      // ['class="header"', 'class', '=', 'header']
+      attributes.push([attrMatch[0], attrMatch[1], attrMatch[2], attrMatch[4]]);
   
       //消除空格
       advanceSpaces(context);

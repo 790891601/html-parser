@@ -1,4 +1,4 @@
-import HTMLParser from '../packages/index.ts';
+import HTMLParser from '../packages/core/index';
 
 const htmlParser = new HTMLParser();
 

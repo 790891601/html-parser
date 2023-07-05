@@ -1,8 +1,9 @@
 
+import transformText from '../transform/transformText';
+
 export function transform(ast, options = {}) {
-    // 优化 ast，标记静态节点
     const context = {
-        
+        ast: {},
         nodeTransforms: [
             // transformIf,
             // transformFor,
@@ -15,19 +16,16 @@ export function transform(ast, options = {}) {
             // model: transformModel
         }
     }
-    const dmlAst = traverseNode(ast, context);
+    //树结构转成通用语言描述语法树
+    traverseNode(ast, context);
 
-    return dmlAst;
+    return context.ast;
 }
-function transformText(node, context) {
-    return function postformText() {
-        const { tag, props } = node;
-        
-    }
-}
+
 
 //遍历AST
 function traverseNode(node, context) {
+    const ast = {};
     context.currentNode = node
     const { nodeTransforms } = context; //转换函数
     const exitFns: Function[] = []; //退出函数
@@ -45,10 +43,14 @@ function traverseNode(node, context) {
     traverseChildren(node, context);
     context.currentNode = node;
 
-    let i = exitFns.length
+    let i = exitFns.length;
+
+    //逆向执行输出函数,先进先出
     while (i--) {
         exitFns[i]()
     }
+
+    return ast;
 }
 function traverseChildren(node, context) {
 
