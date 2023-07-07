@@ -1,5 +1,5 @@
 
-export default function transformText(node, context) {
+export function transformText(node, context) {
     return function postformText() {
         const { tag, props } = node;
         
