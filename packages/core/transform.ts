@@ -1,5 +1,6 @@
 
-import transformText from '../transform/transformText';
+import {transformText, transformDiff} from '../transform/index';
+import { generate } from './generate';
 
 export function transform(ast, options = {}) {
     const context = {
@@ -7,19 +8,21 @@ export function transform(ast, options = {}) {
         nodeTransforms: [
             // transformIf,
             // transformFor,
-            transformText,
+            // transformText,
+            transformDiff,
             // transformElement,
         ],
         directiveTransforms: {
             // on: transformOn,
             // bind: transformBind,
             // model: transformModel
-        }
+        },
+        ...options,
     }
     //树结构转成通用语言描述语法树
     traverseNode(ast, context);
 
-    return context.ast;
+    return generate(ast, options);
 }
 
 
@@ -31,6 +34,7 @@ function traverseNode(node, context) {
     const exitFns: Function[] = []; //退出函数
 
     for(let i = 0; i < nodeTransforms.length; i++) {
+        //执行对应转换入口函数
         const onExit = nodeTransforms[i](node, context);
         if(onExit) {
             if(Array.isArray(onExit)) {
@@ -53,5 +57,6 @@ function traverseNode(node, context) {
     return ast;
 }
 function traverseChildren(node, context) {
-
+    // 递归遍历子数组
+    traverseNode(node, context);
 }
