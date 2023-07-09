@@ -1,4 +1,5 @@
 import {TextModes, TagState, advanceBy, advanceSpaces, isUnary, closeElement, toggleMode, revertMode} from './utils/index'
+import {parserOptions, parserContext, HTMLNodeType} from './types'
 
 export function tokenize(template) {
   /**
@@ -11,12 +12,16 @@ export function tokenize(template) {
 }
 
 export default class HTMLParser {
+  private _options: parserOptions;
+  constructor(options: parserOptions = {}) {
+    this._options = options;
+  }
   parser(template) {
-    const context = {
+    const context: parserContext = {
         source: template,
         mode: TextModes.DATA,
         oldMode: TextModes.DATA,
-        type: 'Root',
+        type: HTMLNodeType.Root,
         children: [],
     }
     const nodes = this.parseChildren(context);
