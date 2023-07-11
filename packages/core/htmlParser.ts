@@ -1,5 +1,5 @@
 import {TextModes, TagState, advanceBy, advanceSpaces, isUnary, closeElement, toggleMode, revertMode} from './utils/index'
-import {parserOptions, parserContext, HTMLNodeType} from './types'
+import {parserOptions, parserContext, HTMLNodeType, ElementNode, TextNode, RootNode, CommentNode, Node} from './types'
 
 export function tokenize(template) {
   /**
@@ -17,26 +17,28 @@ export default class HTMLParser {
     this._options = options;
   }
   parser(template) {
+    const root: RootNode = {
+      type: HTMLNodeType.Root,
+      children: []
+    };
     const context: parserContext = {
         source: template,
         mode: TextModes.DATA,
         oldMode: TextModes.DATA,
         type: HTMLNodeType.Root,
         children: [],
+        parentNode: root,
     }
-    const nodes = this.parseChildren(context);
+    root.children = this.parseChildren(context);
     
-    return {
-        type: 'Root',
-        children: nodes
-    };
+    return root
   }
-  parseChildren(context, ancestors = []) {
-      let nodes: any[] = [];
+  parseChildren(context, ancestors = []): Node[] {
+      let nodes: Node[] = [];
       // 从上下文对象中取得当前状态，包括模式 mode 和模板内容
     
       while (this.isEnd(context, ancestors)) {
-        const {mode, source} = context;
+        const {mode, source, parentNode} = context;
         let node;// 只有 DATA 模式和 RCDATA 模式才支持插值节点的解析
         if (mode === TextModes.DATA || mode === TextModes.RCDATA) {
           // 只有 DATA 模式才支持标签节点的解析
@@ -68,6 +70,7 @@ export default class HTMLParser {
           if(!node) {
             node = this.parseText(context);
           }
+          node.parentNode = parentNode
           nodes.push(node);
         }else if(mode === TextModes.CDATA) {
           if (source.startsWith("<![CDATA[")) {
@@ -92,7 +95,7 @@ export default class HTMLParser {
     }
   }
     
-  parseText(context) {
+  parseText(context): TextNode {
     let {mode, source} = context;
     //匹配纯文本
     const match = source.match(/[^<>]*/);
@@ -102,8 +105,9 @@ export default class HTMLParser {
       content = match[0];
     }
     return {
-      type: 'Text',
-      content: content
+      type: HTMLNodeType.Text,
+      content: content,
+      parentNode: context.parentNode
     }
   }
   parseInterpolation(context) {
@@ -112,14 +116,14 @@ export default class HTMLParser {
     advanceBy(context, match[0].length);
 
     return {
-      type: 'Interpolation',
+      type: HTMLNodeType.Interpolation,
       content: [match[0], match[1]],
+      parentNode: context.parentNode
     }
   }
-  parseElement(context, ancestors) {
+  parseElement(context, ancestors): ElementNode {
     let {mode, source} = context;
   
-    let nodes = [];
     const match = source.match(/<([a-z][a-zA-Z-]*)/);
     context.source = source.slice(match[0].length);
     const tagName = match[1];
@@ -135,6 +139,14 @@ export default class HTMLParser {
   
     //1.匹配元素属性
     const attrs = this.parseAttribute(context, element);
+    const ElementNode: ElementNode = {
+      type: HTMLNodeType.Element,
+      tagName: tagName,
+      children: [],
+      attrs: attrs,
+      parentNode: context.parentNode,
+    }
+
     if(!element.unary) {
       ancestors.push(element);
       //2.匹配元素内容, 有子元素就开启状态机
@@ -143,7 +155,8 @@ export default class HTMLParser {
       const matchTagEnd = context.source.match(`(.*?)<\\/${tagName}>`);
   
       if(matchTagEnd) {
-        nodes = this.parseChildren(context, ancestors) as any;
+        context.parentNode = ElementNode;
+        ElementNode.children = this.parseChildren(context, ancestors);
       }else {
         throw new Error("标签必须要有结束");
       }
@@ -160,13 +173,7 @@ export default class HTMLParser {
       //3.完成正则匹配后，需要调用 advanceBy 函数消费由正则匹配的全部内容
       //4.如果自闭合，则 advanceBy 消费 />
     }
-  
-    return {
-      type: 'Element',
-      tagName: tagName,
-      children: nodes,
-      attrs: attrs,
-    }
+    return ElementNode;
   }
   
   parseAttribute(context, element) {
@@ -199,7 +206,7 @@ export default class HTMLParser {
     return attributes;
   }
   //注释
-  parseComment(context, ancestors) {
+  parseComment(context, ancestors): CommentNode {
     let {source} = context;
     let value = ''; //注释内容
   
@@ -216,9 +223,9 @@ export default class HTMLParser {
       context.source = '';
     }
     return {
-      type: 'Comment',
-      tagType: TextModes.COMMENT,
-      children: value,
+      type: HTMLNodeType.Comment,
+      content: value,
+      parentNode: context.parentNode
     }
   }
   parseCDATA(context, ancestors) {
@@ -226,8 +233,9 @@ export default class HTMLParser {
     advanceBy(context, cdataMatch[0].length);
     
     return {
-      type: 'CDATA',
+      type: HTMLNodeType.CDATA,
       content: cdataMatch[1],
+      parentNode: context.parentNode
     }
   }
 }

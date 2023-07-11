@@ -1,14 +1,15 @@
+import {HTMLNodeType} from '../core/types'
 //3.用来根据JavaScript AST生成渲染函数代码的生成器（generator）
 export function generate(node, options={}) {
-    if (node.type === 'Root') {
+    if (node.type === HTMLNodeType.Root) {
       // 处理根节点
       return generateChildrenCode(node.children);
-    } else if (node.type === 'Element') {
+    } else if (node.type === HTMLNodeType.Element) {
       // 处理元素节点
       const attrs = generateAttributesCode(node.attrs);
       const children = generateChildrenCode(node.children);
       return `<${node.tagName}${attrs}>${children}</${node.tagName}>`;
-    } else if (node.type === 'Text') {
+    } else if (node.type === HTMLNodeType.Text) {
       // 处理文本节点
       return node.content;
     }
