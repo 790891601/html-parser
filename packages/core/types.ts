@@ -1,7 +1,7 @@
 import type {TextModes} from './utils/index';
 
 export interface parserOptions {
-
+  
 }
 
 export enum HTMLNodeType {

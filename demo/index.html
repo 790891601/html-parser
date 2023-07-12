@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script type="module">
+        import {HTMLParser, transform} from '/core/index.js'
+        import {transformDiff} from '/transform/index.js'
+
+        const htmlParser = new HTMLParser();
+
+        const oldAst = htmlParser.parser("<div><p>123123</p></div>");
+        const newAst = htmlParser.parser("<div><p>456789</p></div>");
+
+        /** 旧的ast如果删除，或者没有,那么整体diff树也会执行，任何节点都会有Root虚拟头节点  */
+        const oldGenerate = transform(oldAst, {diffAst: newAst, nodeTransforms: [['all', transformDiff]]});
+        const newGenerate = transform(newAst, {diffAst: oldAst, nodeTransforms: [['all', transformDiff]]});
+        console.log(oldGenerate, oldAst);
+        console.log(newGenerate, newAst);
+    </script>
+</body>
+</html>

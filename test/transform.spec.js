@@ -1,4 +1,4 @@
-import HTMLParser, {transform} from '../packages/core/index';
+import {HTMLParser, transform} from '../packages/core/index';
 import {transformDiff} from '../packages/transform/transformDiff'
 
 const htmlParser = new HTMLParser();

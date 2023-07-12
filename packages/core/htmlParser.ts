@@ -11,7 +11,7 @@ export function tokenize(template) {
   return tokens;
 }
 
-export default class HTMLParser {
+export class HTMLParser {
   private _options: parserOptions;
   constructor(options: parserOptions = {}) {
     this._options = options;
