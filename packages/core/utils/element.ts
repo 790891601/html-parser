@@ -1,8 +1,24 @@
 import {TagState} from './index'
-import {HTMLNodeType} from '../types';
-/*是否自闭合标签*/
-export const unary = ['meta', 'base', 'br', 'hr', 'img', 'input', 'link'];
-export function isUnary(tagName) {
+
+export const unary = [
+  "br",
+  "hr",
+  "img",
+  "input",
+  "meta",
+  "link",
+  "area",
+  "base",
+  "col",
+  "command",
+  "embed",
+  "keygen",
+  "param",
+  "source",
+  "track",
+  "wbr"
+];
+export function isUnary(tagName): boolean {
   return unary.includes(tagName);
 }
   

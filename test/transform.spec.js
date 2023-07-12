@@ -22,17 +22,17 @@ describe("transform test", () => {
         const oldGenerate2 = transform(oldAst2, {diffAst: newAst2, nodeTransforms: [['all', transformDiff]]});
         const newGenerate2 = transform(newAst2, {diffAst: oldAst2, nodeTransforms: [['all', transformDiff]]});
 
-        expect(oldGenerate2).toBe("<del><div>123123<div>123</div></div></del><ins><p>456789<div>123</div></p></ins>");
-        expect(newGenerate2).toBe("<del><p>456789<div>123</div></p></del><ins><div>123123<div>123</div></div></ins>");
+        expect(oldGenerate2).toBe("<del><p>456789<div>123</div></p></del><ins><div>123123<div>123</div></div></ins>");
+        expect(newGenerate2).toBe("<del><div>123123<div>123</div></div></del><ins><p>456789<div>123</div></p></ins>");
 
         //第三种情况，不同层级，不管子节点如何变化，统一ins和del
-        const oldAst3 = htmlParser.parser("<div><p>123</p</div>");
+        const oldAst3 = htmlParser.parser("<div><p>123</p></div>");
         const newAst3 = htmlParser.parser("<p>123</p>");
         const oldGenerate3 = transform(oldAst3, {diffAst: newAst3, nodeTransforms: [['all', transformDiff]]});
         const newGenerate3 = transform(newAst3, {diffAst: oldAst3, nodeTransforms: [['all', transformDiff]]});
 
-        expect(oldGenerate3).toBe("<del><p>123</p></del><ins><div><p>123</p</div></ins>");
-        expect(newGenerate3).toBe("<del><div><p>123</p</div></del><ins><p>123</p></ins>");
+        expect(oldGenerate3).toBe("<del><p>123</p></del><ins><div><p>123</p></div></ins>");
+        expect(newGenerate3).toBe("<del><div><p>123</p></div></del><ins><p>123</p></ins>");
 
         //第四种情况，相同层级，外层标签一致，子节点数量不同，优先处理子节点,对每个子节点进行ins和del标记
         const oldAst4 = htmlParser.parser("<ul><li>1</li><li>3</li><li>2</li></ul>");

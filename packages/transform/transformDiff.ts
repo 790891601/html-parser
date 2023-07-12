@@ -13,6 +13,7 @@ export function transformDiff(ast, context) {
     const newStack = [...ast.children];    
     
     while(oldStack.length || newStack.length) {
+        let isPushChildren = true; //是否加入子节点,默认为true
         let oldNode = oldStack.pop();
         let newNode = newStack.pop();
 
@@ -31,6 +32,7 @@ export function transformDiff(ast, context) {
                 }else if(oldNode.type === HTMLNodeType.Element) {
                     if(oldNode.tagName !== newNode.tagName) {
                         //Node节点类型不相等，比如元素标签名不一致
+                        isPushChildren = false;
                         insert(addDiffType(oldNode, DiffType.removed), newParentNode, null);
                         insert(addDiffType(newNode, DiffType.added), newParentNode, newNode);
                     }
@@ -38,6 +40,7 @@ export function transformDiff(ast, context) {
                  
                 }
             }else {
+                //节点不同
                 insert(addDiffType(oldNode, DiffType.removed), newParentNode, null);
                 insert(addDiffType(newNode, DiffType.added), newParentNode, newNode);
             }
@@ -47,10 +50,10 @@ export function transformDiff(ast, context) {
             insert(addDiffType(newNode, DiffType.added), newParentNode, newNode);
         }
 
-        if(oldNode && oldNode.type === HTMLNodeType.Element) {
+        if(oldNode && oldNode.type === HTMLNodeType.Element && isPushChildren) {
             oldStack.push(...oldNode.children);
         }
-        if(newNode && newNode.type === HTMLNodeType.Element) {
+        if(newNode && newNode.type === HTMLNodeType.Element && isPushChildren) {
             newStack.push(...newNode.children);
         }
     }

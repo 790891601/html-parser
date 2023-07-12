@@ -1,34 +1,44 @@
 
 import {transformText, transformDiff} from '../transform/index';
+import {deepCopy} from './utils/index'
 import { generate } from './generate';
 
-export function transform(ast, options = {nodeTransforms: [], directiveTransforms: {}}) {
+interface transformOptions {
+    nodeTransforms?: Function[] | [string, Function],
+    directiveTransforms?: Object,
+    diffAst?: Object
+}
+
+export function transform(ast, options: transformOptions = {}) {
+    const { nodeTransforms = [], directiveTransforms = {}, diffAst = {} } = options;
+
     const context = {
-        ...options,
+        ast: deepCopy(ast),
+        diffAst: deepCopy(diffAst),
         nodeTransforms: [
             // transformIf,
             // transformFor,
             // transformText,
             // transformDiff,
             // transformElement,
-            ...options.nodeTransforms.filter(item => Array.isArray(item) ? item[0] !== 'all' : true),
+            ...nodeTransforms.filter(item => Array.isArray(item) ? item[0] !== 'all' : true),
         ],
         directiveTransforms: {
             // on: transformOn,
             // bind: transformBind,
             // model: transformModel
-            ...options.directiveTransforms
+            ...directiveTransforms
         },
     }
-    const nodeTransformAll = options.nodeTransforms.filter(item => Array.isArray(item) && item[0] === 'all').flatMap(f => f[1]);
-    callNodeTransforms(ast, {
+    const nodeTransformAll = nodeTransforms.filter(item => Array.isArray(item) && item[0] === 'all').flatMap(f => f[1]);
+    callNodeTransforms(context.ast, {
         ...context,
         nodeTransforms: nodeTransformAll
     });
 
     //遍历树结构，并调用插件函数
-    traverseNode(ast, context);
-    return generate(ast, options);
+    traverseNode(context.ast, context);
+    return generate(context.ast, options);
 }
 
 function callNodeTransforms(node, context) {
