@@ -1,25 +1,105 @@
 import {TextModes, TagState, advanceBy, advanceSpaces, isUnary, closeElement, toggleMode, revertMode} from './utils/index'
-import {parserOptions, parserContext, HTMLNodeType, ElementNode, TextNode, RootNode, CommentNode, Node} from './types'
+import {_parserOptions, parserOptions, parserContext, HTMLNodeType, ElementNode, TextNode, RootNode, CommentNode, Node} from './types'
 
-export function tokenize(template) {
+export function tokenize(input) {
   /**
    * 输入：<div>123</div>
    * 输出: [{ type: tagOpen, tagName: 'div' }, { type: text, content: '123' }, { type: tagEnd, tagName: 'div' }]
    */
   const tokens = [];
+
+  while (input.length > 0) {
+    if (input[0] === '<') {
+      if (input[1] === '/') {
+        // 解析结束标签
+        const endTag = parseEndTag(input);
+        tokens.push(endTag);
+      } else {
+        // 解析开始标签
+        const startTag = parseStartTag(input);
+        tokens.push(startTag);
+      }
+    } else {
+      // 解析文本内容
+      const text = parseText(input);
+      tokens.push(text);
+    }
+  }
   
   return tokens;
 }
+function parseStartTag(input) {
+  const tag = {
+    type: 'startTag',
+    tagName: '',
+    attributes: []
+  };
 
+  // 解析标签名
+  const tagNameEndIndex = input.indexOf('>');
+  tag.tagName = input.slice(1, tagNameEndIndex);
+
+  // 解析属性
+  const attributesString = input.slice(tagNameEndIndex, input.indexOf('>'));
+  tag.attributes = parseAttributes(attributesString);
+
+  return tag;
+}
+
+function parseEndTag(input) {
+  const tagNameEndIndex = input.indexOf('>');
+  const tagName = input.slice(2, tagNameEndIndex);
+  
+  return {
+    type: 'endTag',
+    tagName: tagName
+  };
+}
+
+function parseAttributes(input) {
+  const attributes = [];
+
+  // 通过正则表达式提取属性名和属性值
+  const regex = /(\S+)\s*=\s*["']?((?:.(?!["']?\s+(?:\S+)=|[>"']))+.)["']?/g;
+  let match;
+  
+  while ((match = regex.exec(input)) !== null) {
+    const attribute = {
+      name: match[1],
+      value: match[2]
+    };
+
+    attributes.push(attribute);
+  }
+
+  return attributes;
+}
+
+function parseText(input) {
+  const endIndex = input.indexOf('<');
+  const textContent = input.slice(0, endIndex).trim();
+
+  return {
+    type: 'text',
+    content: textContent
+  };
+}
+
+let idx = BigInt(1);
 export class HTMLParser {
-  private _options: parserOptions;
+  private _options: _parserOptions;
   constructor(options: parserOptions = {}) {
-    this._options = options;
+    this._options = {
+      ...options,
+      id: idx
+    };
   }
   parser(template) {
     const root: RootNode = {
+      id: this._options.id++,
       type: HTMLNodeType.Root,
-      children: []
+      children: [],
+      pid: BigInt(0),
     };
     const context: parserContext = {
         source: template,
@@ -27,7 +107,7 @@ export class HTMLParser {
         oldMode: TextModes.DATA,
         type: HTMLNodeType.Root,
         children: [],
-        parentNode: root,
+        pid: root.id,
     }
     root.children = this.parseChildren(context);
     
@@ -38,7 +118,7 @@ export class HTMLParser {
       // 从上下文对象中取得当前状态，包括模式 mode 和模板内容
     
       while (this.isEnd(context, ancestors)) {
-        const {mode, source, parentNode} = context;
+        const {mode, source, pid} = context;
         let node;// 只有 DATA 模式和 RCDATA 模式才支持插值节点的解析
         if (mode === TextModes.DATA || mode === TextModes.RCDATA) {
           // 只有 DATA 模式才支持标签节点的解析
@@ -70,7 +150,7 @@ export class HTMLParser {
           if(!node) {
             node = this.parseText(context);
           }
-          node.parentNode = parentNode
+          node.pid = pid
           nodes.push(node);
         }else if(mode === TextModes.CDATA) {
           if (source.startsWith("<![CDATA[")) {
@@ -105,9 +185,10 @@ export class HTMLParser {
       content = match[0];
     }
     return {
+      id: this._options.id++,
       type: HTMLNodeType.Text,
       content: content,
-      parentNode: context.parentNode
+      pid: context.pid
     }
   }
   parseInterpolation(context) {
@@ -116,38 +197,42 @@ export class HTMLParser {
     advanceBy(context, match[0].length);
 
     return {
+      id: this._options.id++,
       type: HTMLNodeType.Interpolation,
       content: [match[0], match[1]],
-      parentNode: context.parentNode
+      pid: context.pid
     }
   }
   parseElement(context, ancestors): ElementNode {
-    let {mode, source} = context;
+    let {source} = context;
   
-    const match = source.match(/<([a-z][a-zA-Z-]*)/);
-    context.source = source.slice(match[0].length);
+    const match = source.match(/^<([a-z][a-zA-Z-]*)/);
+    if(!match) {
+      throw new Error("标签格式不正确");
+    }
     const tagName = match[1];
+    const isUnaryTag = isUnary(tagName);
+
+    context.source = source.slice(match[0].length);
     const element = { //这个状态栈，子元素需要匹配它是否需要闭合,或者它可能是自闭合的标签
       tagStatus: TagState.tagName, //内容状态
       tagName: tagName, //标签名称
-      unary: false,
-    }
-    if(isUnary(tagName)) {
-      element.unary = true;
-      closeElement(element);
-    }
-  
+      unary: isUnaryTag,
+    }  
     //1.匹配元素属性
     const attrs = this.parseAttribute(context, element);
     const ElementNode: ElementNode = {
+      id: this._options.id++,
       type: HTMLNodeType.Element,
       tagName: tagName,
       children: [],
       attrs: attrs,
-      parentNode: context.parentNode,
+      pid: context.pid,
     }
 
-    if(!element.unary) {
+    if(isUnaryTag) {
+      closeElement(element);
+    }else {
       ancestors.push(element);
       //2.匹配元素内容, 有子元素就开启状态机
       element.tagStatus = TagState.text;
@@ -155,7 +240,7 @@ export class HTMLParser {
       const matchTagEnd = context.source.match(`(.*?)<\\/${tagName}>`);
   
       if(matchTagEnd) {
-        context.parentNode = ElementNode;
+        context.pid = ElementNode.id;
         ElementNode.children = this.parseChildren(context, ancestors);
       }else {
         throw new Error("标签必须要有结束");
@@ -223,9 +308,10 @@ export class HTMLParser {
       context.source = '';
     }
     return {
+      id: this._options.id++,
       type: HTMLNodeType.Comment,
       content: value,
-      parentNode: context.parentNode
+      pid: context.pid
     }
   }
   parseCDATA(context, ancestors) {
@@ -233,9 +319,37 @@ export class HTMLParser {
     advanceBy(context, cdataMatch[0].length);
     
     return {
+      id: this._options.id++,
       type: HTMLNodeType.CDATA,
       content: cdataMatch[1],
-      parentNode: context.parentNode
+      pid: context.pid
     }
   }
+}
+
+export function createInsNode(node) {
+  // 创建ins节点，并复制原节点的属性和子节点
+  const insNode: ElementNode = {
+      id: idx++,
+      type: HTMLNodeType.Element,
+      tagName: 'ins',
+      attrs: [],
+      children: [node],
+      pid: node.pid,
+  };
+  node.pid = insNode.id;
+  return insNode;
+}
+export function createDelNode(node) {
+  // 创建del节点，并复制原节点的属性和子节点
+  const delNode: ElementNode = {
+      id: idx++,
+      type: HTMLNodeType.Element,
+      tagName: 'del',
+      attrs: [],
+      children: [node],
+      pid: node.pid,
+  };
+  node.pid = delNode.id;
+  return delNode;
 }

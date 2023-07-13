@@ -1,7 +1,9 @@
 import type {TextModes} from './utils/index';
 
+export interface _parserOptions {
+  id: bigint;
+}
 export interface parserOptions {
-  
 }
 
 export enum HTMLNodeType {
@@ -13,35 +15,42 @@ export enum HTMLNodeType {
   CDATA='CDATA',
 }
 export interface ElementNode {
+  id: bigint,
   type: HTMLNodeType.Element,
   tagName: string,
   children: Node[],
   attrs: any[],
-  parentNode: Node,
+  pid: bigint,
 }
 export interface TextNode {
+  id: bigint,
   type: HTMLNodeType.Text,
   content: string,
-  parentNode: Node,
+  pid: bigint,
 }
 export interface RootNode {
+  id: bigint,
   type: HTMLNodeType.Root,
   children: Node[],
+  pid: bigint,
 }
 export interface InterpolationNode {
+  id: bigint,
   type: HTMLNodeType.Interpolation,
   content: any[],
-  parentNode: Node,
+  pid: bigint,
 }
 export interface CDATANode {
+  id: bigint,
   type: HTMLNodeType.CDATA,
   content: string,
-  parentNode: Node,
+  pid: bigint,
 }
 export interface CommentNode {
+  id: bigint,
   type: HTMLNodeType.Comment,
   content: string,
-  parentNode: Node,
+  pid: bigint,
 }
 export type Node = ElementNode | TextNode | RootNode | InterpolationNode | CDATANode;
 
@@ -51,5 +60,5 @@ export interface parserContext {
   oldMode: TextModes;
   type: HTMLNodeType,
   children: Node[],
-  parentNode: Node
+  pid: bigint,
 }
