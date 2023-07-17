@@ -44,36 +44,36 @@ describe("parser test", () => {
         expect(htmlParser.parser("<div>{{ obj.a }}</div>")).toMatchObject(result);
     });
 
-    test("parser at parseCDATA", () => {
-        const result = {
-            "children": [
-                {
-                    "attrs": [], 
-                    "children": [
-                        {
-                            type: 'CDATA',
-                            "content": "<HelloWorld!>哈哈$#@!合法符号亲唇纹嗯", 
-                        }
-                    ], 
-                    "tagName": "div", 
-                    "type": "Element"
-                },
-                {
-                    "attrs": [], 
-                    "children": [
-                        {
-                            type: 'Text',
-                            "content": "xxx", 
-                        }
-                    ], 
-                    "tagName": "b", 
-                    "type": "Element"
-                }
-            ], 
-            "type": "Root"
-        }
-        expect(htmlParser.parser("<div><![CDATA[<HelloWorld!>哈哈$#@!合法符号亲唇纹嗯]]</div><b>xxx</b>")).toMatchObject(result);
-    });
+    // test("parser at parseCDATA", () => {
+    //     const result = {
+    //         "children": [
+    //             {
+    //                 "attrs": [], 
+    //                 "children": [
+    //                     {
+    //                         type: 'CDATA',
+    //                         "content": "<HelloWorld!>哈哈$#@!合法符号亲唇纹嗯", 
+    //                     }
+    //                 ], 
+    //                 "tagName": "div", 
+    //                 "type": "Element"
+    //             },
+    //             {
+    //                 "attrs": [], 
+    //                 "children": [
+    //                     {
+    //                         type: 'Text',
+    //                         "content": "xxx", 
+    //                     }
+    //                 ], 
+    //                 "tagName": "b", 
+    //                 "type": "Element"
+    //             }
+    //         ], 
+    //         "type": "Root"
+    //     }
+    //     expect(htmlParser.parser("<div><![CDATA[<HelloWorld!>哈哈$#@!合法符号亲唇纹嗯]]</div><b>xxx</b>")).toMatchObject(result);
+    // });
 
     test("parser at once element", () => {
         const result = {

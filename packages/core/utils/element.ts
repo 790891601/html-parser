@@ -1,4 +1,4 @@
-import {TagState} from './index'
+import {TagState} from '../types'
 
 export const unary = [
   "br",
