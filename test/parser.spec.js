@@ -44,53 +44,53 @@ describe("parser test", () => {
         expect(htmlParser.parser("<div>{{ obj.a }}</div>")).toMatchObject(result);
     });
 
-    // test("parser at parseCDATA", () => {
-    //     const result = {
-    //         "children": [
-    //             {
-    //                 "attrs": [], 
-    //                 "children": [
-    //                     {
-    //                         type: 'CDATA',
-    //                         "content": "<HelloWorld!>哈哈$#@!合法符号亲唇纹嗯", 
-    //                     }
-    //                 ], 
-    //                 "tagName": "div", 
-    //                 "type": "Element"
-    //             },
-    //             {
-    //                 "attrs": [], 
-    //                 "children": [
-    //                     {
-    //                         type: 'Text',
-    //                         "content": "xxx", 
-    //                     }
-    //                 ], 
-    //                 "tagName": "b", 
-    //                 "type": "Element"
-    //             }
-    //         ], 
-    //         "type": "Root"
-    //     }
-    //     expect(htmlParser.parser("<div><![CDATA[<HelloWorld!>哈哈$#@!合法符号亲唇纹嗯]]</div><b>xxx</b>")).toMatchObject(result);
-    // });
-
-    test("parser at once element", () => {
+    test("parser at parseCDATA", () => {
         const result = {
             "children": [
                 {
-                    "attrs": [
-                        ["src='http://www.baidu.com/s/1.jpg'", "src", "=", "http://www.baidu.com/s/1.jpg"],
-                        ["alt='hello'", "alt", "=", "hello"],
+                    "attrs": [], 
+                    "children": [
+                        {
+                            type: 'CDATA',
+                            "content": "<HelloWorld!>哈哈$#@!合法符号亲唇纹嗯", 
+                        }
                     ], 
-                    "tagName": "img", 
+                    "tagName": "div", 
                     "type": "Element"
                 },
+                {
+                    "attrs": [], 
+                    "children": [
+                        {
+                            type: 'Text',
+                            "content": "xxx", 
+                        }
+                    ], 
+                    "tagName": "b", 
+                    "type": "Element"
+                }
             ], 
             "type": "Root"
         }
-        expect(htmlParser.parser("<img src='http://www.baidu.com/s/1.jpg' alt='hello' />")).toMatchObject(result);
+        expect(htmlParser.parser("<div><![CDATA[<HelloWorld!>哈哈$#@!合法符号亲唇纹嗯]]</div><b>xxx</b>")).toMatchObject(result);
     });
+
+    // test("parser at once element", () => {
+    //     const result = {
+    //         "children": [
+    //             {
+    //                 "attrs": [
+    //                     ["src='http://www.baidu.com/s/1.jpg'", "src", "=", "http://www.baidu.com/s/1.jpg"],
+    //                     ["alt='hello'", "alt", "=", "hello"],
+    //                 ], 
+    //                 "tagName": "img", 
+    //                 "type": "Element"
+    //             },
+    //         ], 
+    //         "type": "Root"
+    //     }
+    //     expect(htmlParser.parser("<img src='http://www.baidu.com/s/1.jpg' alt='hello' />")).toMatchObject(result);
+    // });
 
     //非合法标签
     // test("parser at tag end", async () => {

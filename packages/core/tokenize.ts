@@ -1,7 +1,7 @@
 import {advanceBy, advanceSpaces, isUnary, toggleMode, revertMode, CONFIG } from './utils/index'
 import {_parserOptions, parserContext, HTMLNodeType, ElementNode, TextNode, CommentNode, Node, TagState, TextModes} from './types'
 
-const elementRE = /^\s*(?:<([^>\s\/]*)\s*(?:[^<>]*)(\/?)>|<\/\s*([^>\s\/]*)\s*>)/;
+const elementRE = /^\s*(?:<\/\s*([^>\s\/]*)\s*>|<([^>\s\/]*)\s*([^<>]*?)(\/?)>)/;
 // const valuedAttributeRE = /([?]|(?!\d|-{2}|-\d)[a-zA-Z0-9\u00A0-\uFFFF-_:!%-.~<]+)=?(?:["]([^"]*)["]|[']([^']*)[']|[{]([^}]*)[}])?/gms;
 
 export function tokenize(context: parserContext) {
@@ -64,16 +64,14 @@ function parseStartTag(context: parserContext) {
     };
 
     const elMatch = context.source.match(elementRE);
-    
-    console.log(elMatch, context.source)
 
     if(elMatch) {
-        const tagName = elMatch[1];
-        const attributes = elMatch[2];
-        const selfClose = elMatch[3];
+        const tagName = elMatch[2];
+        const attributes = elMatch[3];
+        const selfClose = elMatch[4];
 
         tag.tagName = tagName;
-        tag.attributes = parseAttributes(attributes);
+        tag.attrs = parseAttributes(attributes);
         if(selfClose) {
             if(!isUnary(tagName)) {
                 throw new Error("单标签不合法")
@@ -95,7 +93,7 @@ function parseStartTag(context: parserContext) {
     const elMatch = context.source.match(elementRE);
 
     if(elMatch) {
-        const tagName = elMatch[4];
+        const tagName = elMatch[1];
         tagEnd.tagName = tagName;
         advanceBy(context, elMatch[0].length);
     }

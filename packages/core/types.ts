@@ -71,7 +71,7 @@ export interface CommentNode {
   content: string,
   pid: bigint,
 }
-export type Node = ElementNode | TextNode | RootNode | InterpolationNode | CDATANode;
+export type Node = ElementNode | TextNode | RootNode | InterpolationNode | CDATANode | CommentNode;
 
 export interface parserContext {
   source: string;

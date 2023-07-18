@@ -1,7 +1,7 @@
 import { context } from "esbuild";
 import { ElementNode, HTMLNodeType } from "../core/types";
 import { isEqualElementType } from "../core/utils";
-import  {createInsNode, createDelNode} from '../core/htmlParser'
+import  {createInsNode, createDelNode} from '../core/tokenize'
 
 enum DiffType {
     added,
@@ -61,10 +61,10 @@ export function transformDiff(ast, context) {
             insert(addDiffType(newNode, DiffType.added), newParentNode, newNode);
         }
         
-        if(oldNode && (oldNode.type === HTMLNodeType.Element || oldNode.type === HTMLNodeType.Root) && isPushChildren) {
+        if(oldNode && ((oldNode.type === HTMLNodeType.Element && !oldNode.unary) || oldNode.type === HTMLNodeType.Root) && isPushChildren) {
             oldStack.push(...oldNode.children);
         }
-        if(newNode && (newNode.type === HTMLNodeType.Element || newNode.type === HTMLNodeType.Root) && isPushChildren) {
+        if(newNode && ((newNode.type === HTMLNodeType.Element && !newNode.unary) || newNode.type === HTMLNodeType.Root) && isPushChildren) {
             newStack.push(...newNode.children);
         }
     }
