@@ -1,5 +1,5 @@
 import {tokenize} from './tokenize'
-import {advanceBy, advanceSpaces, isUnary, closeElement, toggleMode, revertMode, CONFIG} from './utils/index'
+import { CONFIG, resetConfigIdx} from './utils/index'
 import {_parserOptions, parserOptions, parserContext, HTMLNodeType, ElementNode, TextNode, RootNode, CommentNode, Node, TagState, TextModes, CDATANode} from './types'
 
 export class HTMLParser {
@@ -8,6 +8,7 @@ export class HTMLParser {
     this._options = options;
   }
   parser(template) {
+    resetConfigIdx();
     const root: RootNode = {
       id: CONFIG.idx++,
       type: HTMLNodeType.Root,
@@ -94,14 +95,14 @@ export class HTMLParser {
   parseElementNode(context, token): ElementNode {
     return {
       ...token,
-      pid: context.id,
+      pid: context.pid,
       type: HTMLNodeType.Element
     }
   }
   parseNode(context, token): Node {
     return {
       ...token,
-      pid: context.id,
+      pid: context.pid,
     }
   }
   isEnd(context, ancestors) {

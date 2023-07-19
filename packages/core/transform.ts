@@ -1,5 +1,5 @@
 
-import {transformText, transformDiff} from '../transform/index';
+import {transformText, transformDiffPlugin} from '../transform/index';
 import {deepCopy} from './utils/index'
 import { generate } from './generate';
 

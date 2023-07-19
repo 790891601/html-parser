@@ -6,9 +6,31 @@
     <title>Document</title>
 </head>
 <body>
+    <div id="old" style="width: 50%;float: left;"></div>
+    <div id="new" style="width: 50%;float: left;"></div>
     <script type="module">
-        import {tokenize} from '/core/index.js'
-        // import {transformDiff} from '/transform/index.js'
+        import {HTMLParser, transform} from '/core/index.js'
+        import {transformDiffPlugin} from '/transform/index.js'
+        const htmlParser = new HTMLParser();
+
+        const oldAst6 = htmlParser.parser("<p><strong>菜单位置：</strong>\n\n<strong>背景：</strong>\n\n<strong>现有功能：</strong>\n\n<strong>期望功能：</strong>\n\n<strong>备注：</strong>\n1\n</p>");
+        const newAst6 = htmlParser.parser("<p>3333\n\n</p>");
+        const oldGenerate6 = transform(newAst6, {diffAst: oldAst6, nodeTransforms: [['all', 
+            transformDiffPlugin({
+                oldAttrs: [
+                    {name: 'style', value: `background-color: #ffb7b7;display:block;`}
+                ],
+                newAttrs: [
+                    {name: 'style', value: `background-color: #8edf97;display:block;`}
+                ]
+            })
+        ]]});
+        const newGenerate6 = transform(newAst6);
+
+        console.log(oldGenerate6)
+        console.log(newGenerate6)
+        document.getElementById('old').innerHTML = oldGenerate6;
+        document.getElementById('new').innerHTML = newGenerate6;
     </script>
 </body>
 </html>

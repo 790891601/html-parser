@@ -1,4 +1,4 @@
-import {advanceBy, advanceSpaces, isUnary, toggleMode, revertMode, CONFIG } from './utils/index'
+import {advanceBy, advanceSpaces, isUnary, toggleMode, revertMode, CONFIG, resetConfigIdx } from './utils/index'
 import {_parserOptions, parserContext, HTMLNodeType, ElementNode, TextNode, CommentNode, Node, TagState, TextModes} from './types'
 
 const elementRE = /^\s*(?:<\/\s*([^>\s\/]*)\s*>|<([^>\s\/]*)\s*([^<>]*?)(\/?)>)/;
@@ -57,9 +57,10 @@ export function tokenize(context: parserContext) {
 
 function parseStartTag(context: parserContext) {
     const tag: any = {
+      id: CONFIG.idx++,
       type: TagState.tagOpen,
       tagName: '',
-      attributes: [],
+      attrs: [],
       unary: false,
     };
 
@@ -88,7 +89,6 @@ function parseStartTag(context: parserContext) {
     const tagEnd: any = {
         type: TagState.tagEnd,
         tagName: '',
-        unary: false,
     };
     const elMatch = context.source.match(elementRE);
 
@@ -181,26 +181,26 @@ export function parseInterpolation(context) {
     }
 }
 
-export function createInsNode(node) {
+export function createInsNode(node, options) {
     // 创建ins节点，并复制原节点的属性和子节点
     const insNode: ElementNode = {
         id: CONFIG.idx++,
         type: HTMLNodeType.Element,
         tagName: 'ins',
-        attrs: [],
+        attrs: [...options.newAttrs],
         children: [node],
         pid: node.pid,
     };
     node.pid = insNode.id;
     return insNode;
   }
-  export function createDelNode(node) {
+  export function createDelNode(node, options) {
     // 创建del节点，并复制原节点的属性和子节点
     const delNode: ElementNode = {
         id: CONFIG.idx++,
         type: HTMLNodeType.Element,
         tagName: 'del',
-        attrs: [],
+        attrs: [...options.oldAttrs],
         children: [node],
         pid: node.pid,
     };
